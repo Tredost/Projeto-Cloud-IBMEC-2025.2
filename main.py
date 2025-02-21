@@ -21,7 +21,7 @@ with open(PRIVATE_KEY_PATH, 'rb') as f:
 BASE_URL = "https://api.binance.com"
 
 # Obter o preço atual do BTC
-ticker_url = "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"
+ticker_url = BASE_URL + "/api/v3/ticker/price?symbol=BTCUSDT"
 response = requests.get(ticker_url)
 btc_price = float(response.json()['price'])
 
@@ -59,3 +59,29 @@ response = requests.post(
     data=params,
 )
 print(response.json())'''
+
+
+def check_order_status(order_id):
+    status_url = f'https://testnet.binance.vision/api/v3/order'
+    params = {
+        'symbol': 'BTCUSDT',
+        'orderId': order_id,
+        'timestamp': int(time.time() * 1000)
+    }
+    response = requests.get(status_url, params=params)
+    return response.json()
+
+order_id = 8246277
+
+# Loop para monitorar o status da ordem
+while True:
+    order_status = check_order_status(order_id)
+    executed_qty = float(order_status['executedQty'])
+    orig_qty = float(order_status['origQty'])
+
+    if executed_qty == orig_qty:
+        print("Ordem totalmente preenchida!")
+        break
+    else:
+        print(f"Ordem parcialmente preenchida: {executed_qty}/{orig_qty}")
+        time.sleep(5)  # Espera 5 segundos antes de verificar novamente
